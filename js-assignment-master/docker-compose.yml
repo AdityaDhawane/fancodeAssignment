@@ -1,0 +1,38 @@
+version: '3'
+services:
+  db:
+    image: mysql:8
+    ports:
+      - 3308:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=mysecretpassword
+      - MYSQL_DATABASE=mydb
+      - MYSQL_USER=myuser
+      - MYSQL_PASSWORD=mypassword
+    volumes:
+      - ./src/migration/base.sql:/docker-entrypoint-initdb.d/base.sql
+    networks:
+      - my-network
+  app:
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV=development
+    networks:
+      - my-network
+    logging:                   # Specify logging configuration for the app service
+      driver: "json-file"     # Specify the logging driver
+      options:                # Specify driver-specific options
+        max-size: "10m"       # Limit the size of log files to 10 MB
+        max-file: "3"         # Keep up to 3 rotated log files
+
+networks:
+  my-network:
+
+volumes:
+  db-data:
